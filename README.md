@@ -1,8 +1,8 @@
-# `riscv-rust-quickstart`
+# `5eroRISC Security Research Using Rust and RISC-V`
 
-> A template for building Rust applications for HiFive1 boards
+> The original template is based upon https://github.com/riscv-rust/riscv-rust-quickstart
+> This template is maintained by dkhayes117 for educational purposes.
 
-This project is developed and maintained by the [RISC-V team][team].
 
 ## Dependencies
 
