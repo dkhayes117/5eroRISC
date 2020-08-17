@@ -23,7 +23,8 @@ fn main() -> ! {
     //Read the misa CSR to see all implemented extensions
     let ext = riscv::register::misa::read();
     sprintln!("Preparing to read MISA register");
-    sprintln!("MISA register Contents: {}", ext.map_or(0, |v| v.bits()));
+    sprintln!("MXL  ZYXWVUTSRQPONMLKJIHGFEDCBA");
+    sprintln!("{:b}", ext.map_or(0, |v| v.bits()));
 
     loop {}
 }
