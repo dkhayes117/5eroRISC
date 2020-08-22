@@ -10,6 +10,15 @@ use hifive1::{sprintln, pin};
 use riscv::register::{pmpaddr0,pmpaddr1,pmpaddr2,pmpaddr3,pmpaddr4,pmpaddr5,pmpaddr6,pmpaddr7,
                       pmpcfg0,pmpcfg1};
 
+
+fn print_register_by_byte(x:usize,mut i:i32){
+    sprintln!("         L  A-XWR");
+    for byte in x.to_be_bytes().iter().rev() {
+        sprintln!("pmp{}cfg: {:08b}",i, byte);
+        i += 1;
+    }
+}
+
 #[entry]
 fn main() -> ! {
     let dr = DeviceResources::take().unwrap();
@@ -37,17 +46,20 @@ fn main() -> ! {
     let _pmp_cfg0 = pmpcfg0::read();
     let _pmp_cfg1 = pmpcfg1::read();
 
-    // Print the PMP address registers read
-    sprintln!("pmpaddr0: {:032b}", _pmp0);
-    sprintln!("pmpaddr1: {:032b}", _pmp1);
-    sprintln!("pmpaddr2: {:032b}", _pmp2);
-    sprintln!("pmpaddr3: {:032b}", _pmp3);
-    sprintln!("pmpaddr4: {:032b}", _pmp4);
-    sprintln!("pmpaddr5: {:032b}", _pmp5);
-    sprintln!("pmpaddr6: {:032b}", _pmp6);
-    sprintln!("pmpaddr7: {:032b}", _pmp7);
-    sprintln!("pmpcfg0:  {:032b}", _pmp_cfg0);
-    sprintln!("pmpcfg1:  {:032b}", _pmp_cfg1);
+    // Print the PMP address registers in hex
+    sprintln!("pmpaddr0: {:#X}", _pmp0);
+    sprintln!("pmpaddr1: {:#X}", _pmp1);
+    sprintln!("pmpaddr2: {:#X}", _pmp2);
+    sprintln!("pmpaddr3: {:#X}", _pmp3);
+    sprintln!("pmpaddr4: {:#X}", _pmp4);
+    sprintln!("pmpaddr5: {:#X}", _pmp5);
+    sprintln!("pmpaddr6: {:#X}", _pmp6);
+    sprintln!("pmpaddr7: {:#X}", _pmp7);
+
+    //sprintln!("pmpcfg0: {:#X}", _pmp_cfg0);
+    // Print the PMP configuration registers 8 bits, or byte, at a time
+    print_register_by_byte(_pmp_cfg0,0);
+    print_register_by_byte(_pmp_cfg1,4);
 
     loop {}
 }
