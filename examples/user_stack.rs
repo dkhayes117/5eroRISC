@@ -33,8 +33,8 @@ fn main() -> ! {
 
     sprintln!("user_stack alignment: {}", mem::align_of_val(&user_stack));
     sprintln!("user_stack size:      {}", mem::size_of_val(&user_stack));
-    sprintln!("memory array pointer: {:p}", &user_stack);
-    sprintln!("calc stack pointer:   {:p}", &stack_ptr);
+    sprintln!("memory array pointer: {:p}", raw_ptr);
+    sprintln!("calc stack pointer:   {:p}", stack_ptr);
     sprintln!("verify sp stack local:{}", stack_ptr as usize - raw_ptr as usize);
 
     loop{};
