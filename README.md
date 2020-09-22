@@ -73,8 +73,8 @@ $ cargo run --example leds_blink
 
 ## Troubleshooting
 
-Rust versions 1.45.0..1.45.2 constain [a bug](https://github.com/icebreaker-fpga/icebreaker-litex-examples/issues/6#issuecomment-667601893) that marks some of the ELF sections as PROGBITS.
-This may result in huge binaries as well as overwrite the HiFive1 bootloader with zeros. It's recommended to use `beta` or `nightly` toolchain before Rust `1.46.0` comes out.
+Rust versions 1.45.0..1.45.2 contain [a bug](https://github.com/icebreaker-fpga/icebreaker-litex-examples/issues/6#issuecomment-667601893) that marks some of the ELF sections as PROGBITS.
+This may result in huge binaries as well as overwrite the HiFive1 bootloader with zeros. It's recommended to use `stable` Rust `1.46.0`.
 
 If your bootloader is damaged, you will not see the green led blinking when you reset the board. In this case, you can restore the bootloader with the procedure described in the [`hifive1-recover` repo](https://github.com/riscv-rust/hifive1-recover/).
 
