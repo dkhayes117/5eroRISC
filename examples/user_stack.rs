@@ -16,21 +16,30 @@ use riscv::register::{mepc,mstatus,mcause,mtvec};
 #[repr(align(16))]
 struct Align16{ stack: [u8;768] }
 */
-// Function to use as entry for user mode
-fn user_mode(){
-    sprintln!("User Mode Entered!");  // Verify that user mode has been entered
-    let _attempt = mepc::read();
+
+// This function handles machine traps due to interrupts or exceptions
+fn trap_handler(){
+    use mcause::Trap;
+
+    sprintln!("Machine Trap Occurred!");
+    match mcause::read().cause(){
+        Trap::Exception(exception) => {sprintln!("Exception Trap: {:?}",exception)}
+        Trap::Interrupt(interrupt) => {sprintln!("Interrupt Trap: {:?}",interrupt)}
+    }
     loop{};
 }
-// This function handles machine traps from user mode due to interrupts or exceptions
-fn trap_handler(){
-    sprintln!("Machine Trap Occurred!");
-    let cause = mcause::read().code();
-    //let ext = misa::read();
-    //sprintln!("{:032b}", ext.map_or(0, |v| v.bits()));
-    sprintln!("Trap Cause: {}",cause);
+
+// Function to use as entry for user mode
+fn user_mode(){
+    //sprintln!("User Mode Entered!");  // Verify that user mode has been entered
+    //let _attempt = mepc::read();
+    //unsafe{asm!("ecall");}
+    let _x=1;
+    loop{};
 
 }
+// This function handles machine traps from user mode due to interrupts or exceptions
+
 
 #[entry]
 fn main() -> ! {
@@ -50,7 +59,7 @@ fn main() -> ! {
     //let stack_ptr: *const Align16 = raw_ptr.offset(1);
 
     // Top of stack using all 16k of ram
-    let stack_ptr: usize = 0x80004000;
+    let stack_ptr: usize = 0x80001000;
 
     //sprintln!("user_stack alignment: {}", mem::align_of_val(&user_stack));
     //sprintln!("user_stack size:      {}", mem::size_of_val(&user_stack));
@@ -66,14 +75,23 @@ fn main() -> ! {
     let user_entry = user_mode as *const();
     mepc::write(user_entry as usize);  // Entry point for user mode
     unsafe{mstatus::set_mpp(mstatus::MPP::User)}; // Set MPP bit to enter user mode (00)
+    
+
+    let user_address = mepc::read();
+    //let vec_address = mtvec::read().address();
+    //let vec_mode = mtvec::read().trap_mode();
+    sprintln!("User Func Address: {:0x}",user_entry as usize);
+    sprintln!("MEPC: {:0x}",user_address);
+    //sprintln!("Trap Func Address: {:0x}",trap_address as usize);
+    //sprintln!("MTVEC Address: {:0x}",vec_address);
 
     sprintln!("Preparing to Enter User Mode");
     //Add entry point to MEPC and set MPP in MSTATUS to 00
     //#[cfg(all(riscv, feature = "inline-asm"))]
+
     unsafe{
         asm!("mv ra, zero",
              "mv sp, {0}",
-             "mret",
              in(reg) stack_ptr);
     }
 
