@@ -17,8 +17,8 @@ fn trap_handler(){
 
     sprintln!("Machine Trap Occurred!");
     match mcause::read().cause(){
-        Trap::Exception(exception) => {sprintln!("Exception Trap: {:?}",exception)}
-        Trap::Interrupt(interrupt) => {sprintln!("Interrupt Trap: {:?}",interrupt)}
+        Trap::Exception(exception) => {sprintln!("Exception Reason: {:?}",exception)}
+        Trap::Interrupt(interrupt) => {sprintln!("Interrupt Reason: {:?}",interrupt)}
     }
     loop{};
 }
