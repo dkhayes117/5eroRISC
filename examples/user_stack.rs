@@ -8,26 +8,27 @@ use riscv_rt::entry;
 use hifive1::hal::prelude::*;
 use hifive1::hal::DeviceResources;
 use hifive1::{sprintln, pin};
-use core::mem;
+//use core::mem;
 use riscv::register::{mepc,mstatus,mcause,mtvec,mtval};
 
 // This creates a 16 byte aligned memory space for user mode operation
 
 #[repr(align(16))]
+#[allow(dead_code)]
 struct Align16{ stack: [u8;768] }
 
 
 // This function handles machine traps due to interrupts or exceptions
 fn trap_handler(){
     use mcause::Trap;
-
-    sprintln!("Machine Trap Occurred!");
-    match mcause::read().cause(){
-        Trap::Exception(exception) => {sprintln!("Exception Reason: {:?}",exception)}
-        Trap::Interrupt(interrupt) => {sprintln!("Interrupt Reason: {:?}",interrupt)}
-    }
     let mt_val = mtval::read();
-    sprintln!("MTVAL Contents: {:032b}",mt_val);
+    let exception_pc = mepc::read();
+    match mcause::read().cause(){
+        Trap::Exception(exception) => {sprintln!("MTRAP::Exception Reason::{:?}",exception)}
+        Trap::Interrupt(interrupt) => {sprintln!("MTRAP::Interrupt Reason::{:?}",interrupt)}
+    }
+    sprintln!("MTVAL Contents::{:0X}",mt_val);
+    sprintln!("MEPC Contents::{:0X}",exception_pc);
 
     loop{};
 }
@@ -35,8 +36,7 @@ fn trap_handler(){
 // Function to use as entry for user mode
 fn user_mode(){
     //sprintln!("User Mode Entered!");  // Verify that user mode has been entered
-
-    unsafe{asm!("ecall");}
+    unsafe{asm!("ecall")};
 
     loop{};
 }
@@ -56,31 +56,36 @@ fn main() -> ! {
     //Create user stack and determine stack pointer
     let mut user_stack = Align16{ stack: [0;768] };
     let raw_ptr: *const Align16 = &user_stack;
+    let stack_ptr: *const Align16 = unsafe{raw_ptr.offset(1)}; //Top of stack
+    let trap_address= trap_handler as *const();
+    let user_entry= user_mode as *const();  //Function address
 
-    // Top of stack using all 16k of ram
-    //let stack_ptr: usize = 0x80004000;
+    //sprintln!("aligned array address:{:p}", raw_ptr);
 
-    sprintln!("user_stack alignment: {}", mem::align_of_val(&user_stack));
-    sprintln!("user_stack size:      {}", mem::size_of_val(&user_stack));
-    sprintln!("memory array pointer: {:p}", raw_ptr);
-
+    //sprintln!("user_stack alignment: {}", mem::align_of_val(&user_stack));
+    //sprintln!("user_stack size:      {}", mem::size_of_val(&user_stack));
 
     // Setup machine trap vector
-    let trap_address = trap_handler as *const();
-    unsafe{mtvec::write(trap_address as usize,mtvec::TrapMode::Direct)};
 
-    // prepare to entry user mode
-    let user_entry = user_mode as *const();  //Function address
+    sprintln!("stack address::{:0X}", stack_ptr as usize);
+    sprintln!("Trap Address::{:0X}",trap_address as usize);
+    sprintln!("User Entry::{:0X}",user_entry as usize);
+
     mepc::write(user_entry as usize);            // Entry point for user mode
-    unsafe{mstatus::set_mpp(mstatus::MPP::User)};    // Set MPP bit to enter user mode (00)
+    unsafe{mstatus::set_mpp(mstatus::MPP::User);
+           mtvec::write(trap_address as usize,mtvec::TrapMode::Direct)};    // Set MPP bit to enter user mode (00)
     
 
-    let user_address = mepc::read();
+    //let user_address = mepc::read();
 
     // Make sure the user function address matches MEPC write
-    sprintln!("User Func Address: {:0x}",user_entry as usize);
-    sprintln!("MEPC: {:0x}",user_address);
-    sprintln!("Preparing to Enter User Mode");
+    //sprintln!("User Func Address: {:p}",user_entry);
+    //sprintln!("MEPC:              {:0x}",user_address);
+
+    //let m_status = mstatus::read().mpp();
+    //sprintln!("mpp value: {:?}",m_status);
+
+    //sprintln!("Preparing to Enter User Mode");
 
 
     //Setup PMP
@@ -89,15 +94,12 @@ fn main() -> ! {
    // pmpcfg0::write(permissions);
 
     unsafe{
-        let stack_ptr: *const Align16 = raw_ptr.offset(1); //Top of stack
-        sprintln!("calc stack pointer:   {:p}", stack_ptr);
-        sprintln!("verify sp stack local:{}", stack_ptr as usize - raw_ptr as usize);
-
         asm!("mv ra, zero",
              "mv sp, {0}",
              "mret",
-             in(reg) stack_ptr);
+             in(reg) &stack_ptr);
     }
+
 
     loop{};
 }
