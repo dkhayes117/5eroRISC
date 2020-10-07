@@ -31,6 +31,9 @@ fn main() -> ! {
     // Configure UART for stdout
     hifive1::stdout::configure(p.UART0, pin!(pins, uart0_tx), pin!(pins, uart0_rx), 115_200.bps(), clocks);
 
+    pmpaddr0::write(0x20400000);  // All memory can be accessed
+    pmpcfg0::write(0xF);
+
     sprintln!("Preparing to read PMP registers");
 
     // Read the pmp registers
