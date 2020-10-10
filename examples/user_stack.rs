@@ -76,14 +76,14 @@ fn main() -> ! {
     mepc::write(user_entry as usize);            // Entry point for user mode
 
     unsafe{mstatus::set_mpp(mstatus::MPP::User);
-           mtvec::write(trap_address as usize,mtvec::TrapMode::Direct);
-           mstatus::clear_mie();
-           mstatus::set_mpie();
+        mtvec::write(trap_address as usize,mtvec::TrapMode::Direct);
+        mstatus::clear_mie();
+        mstatus::set_mpie();
 
-           asm!("mv ra, zero",
-                "mv sp, {0}",
-                "mret",
-                in(reg) &stack_ptr);
+        asm!("mv ra, zero",
+        "mv sp, {0}",
+        "mret",
+        in(reg) &stack_ptr);
     };
 
     loop{};
