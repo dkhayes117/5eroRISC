@@ -39,7 +39,7 @@ fn main() -> ! {
 
     // create array for prime sieve
 
-    let mut primes: [u16;3000] = [0;3000];
+    let mut primes: [u16;1000] = [0;1000];
     for i in 2..=primes.len()-1{
             primes[i] = i as u16;
     }
