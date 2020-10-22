@@ -3,18 +3,18 @@
 
 extern crate panic_halt;
 
-use riscv_rt::entry;
 use hifive1::hal::prelude::*;
 use hifive1::hal::DeviceResources;
-use hifive1::{sprintln, pin};
-use riscv::register::{mcycle, minstret};
+use hifive1::{pin, sprintln};
+use riscv::register::{mcycle, minstret, time};
+use riscv_rt::entry;
 
 // Function to eliminate integers that are not prime
-fn sieve(primes:&mut [u16], factor:u16){
-    for i in 0..primes.len(){
+fn sieve(primes: &mut [u16], factor: u16) {
+    for i in 0..primes.len() {
         let value = primes[i];
-        if value != 0 && value != factor{
-            if value % factor == 0{
+        if value != 0 && value != factor {
+            if value % factor == 0 {
                 primes[i] = 0;
             }
         }
@@ -31,33 +31,47 @@ fn main() -> ! {
     let clocks = hifive1::clock::configure(p.PRCI, p.AONCLK, 320.mhz().into());
 
     // Configure UART for stdout
-    hifive1::stdout::configure(p.UART0, pin!(pins, uart0_tx), pin!(pins, uart0_rx), 115_200.bps(), clocks);
+    hifive1::stdout::configure(
+        p.UART0,
+        pin!(pins, uart0_tx),
+        pin!(pins, uart0_rx),
+        115_200.bps(),
+        clocks,
+    );
 
     //Enable and initialize performance counter
     let start_cycles = mcycle::read();
     let start_instructions = minstret::read();
+    //let start_time = time::read();
 
     // create array for prime sieve
 
-    let mut primes: [u16;1000] = [0;1000];
-    for i in 2..=primes.len()-1{
-            primes[i] = i as u16;
+    let mut primes: [u16; 1000] = [0; 1000];
+    for i in 2..=primes.len() - 1 {
+        primes[i] = i as u16;
     }
 
-    for i in 0..primes.len(){
+    for i in 0..primes.len() {
         let factor = primes[i];
         if factor != 0 {
-                sieve(&mut primes, factor);
+            sieve(&mut primes, factor);
         }
     }
 
+    //let end_time = time::read();
     let end_cycles = mcycle::read();
     let end_instructions = minstret::read();
 
     let total_cycles = end_cycles - start_cycles;
     let total_instructions = end_instructions - start_instructions;
+    //let total_time = end_time - start_time;
 
-    sprintln!("Cycle Count: {}, Instruction Count: {}",total_cycles,total_instructions);
+    sprintln!(
+        "Cycle Count: {}, Instruction Count: {}",
+        total_cycles,
+        total_instructions
+    );
+    //sprintln!("Cycle Count: {}, Instruction Count: {}, Time: {}",total_cycles,total_instructions, total_time);
 
     loop {}
 }

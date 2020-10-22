@@ -3,18 +3,19 @@
 
 extern crate panic_halt;
 
-use riscv_rt::entry;
 use hifive1::hal::prelude::*;
 use hifive1::hal::DeviceResources;
-use hifive1::{sprintln, pin};
-use riscv::register::{pmpaddr0,pmpaddr1,pmpaddr2,pmpaddr3,pmpaddr4,pmpaddr5,pmpaddr6,pmpaddr7,
-                      pmpcfg0,pmpcfg1};
+use hifive1::{pin, sprintln};
+use riscv::register::{
+    pmpaddr0, pmpaddr1, pmpaddr2, pmpaddr3, pmpaddr4, pmpaddr5, pmpaddr6, pmpaddr7, pmpcfg0,
+    pmpcfg1,
+};
+use riscv_rt::entry;
 
-
-fn print_register_by_byte(x:usize,mut i:i32){
+fn print_register_by_byte(x: usize, mut i: i32) {
     sprintln!("         L  A-XWR");
     for byte in x.to_be_bytes().iter().rev() {
-        sprintln!("pmp{}cfg: {:08b}",i, byte);
+        sprintln!("pmp{}cfg: {:08b}", i, byte);
         i += 1;
     }
 }
@@ -29,9 +30,15 @@ fn main() -> ! {
     let clocks = hifive1::clock::configure(p.PRCI, p.AONCLK, 320.mhz().into());
 
     // Configure UART for stdout
-    hifive1::stdout::configure(p.UART0, pin!(pins, uart0_tx), pin!(pins, uart0_rx), 115_200.bps(), clocks);
+    hifive1::stdout::configure(
+        p.UART0,
+        pin!(pins, uart0_tx),
+        pin!(pins, uart0_rx),
+        115_200.bps(),
+        clocks,
+    );
 
-    pmpaddr0::write(0x20400000);  // All memory can be accessed
+    pmpaddr0::write(0x20400000); // All memory can be accessed
     pmpcfg0::write(0xF);
 
     sprintln!("Preparing to read PMP registers");
@@ -61,8 +68,8 @@ fn main() -> ! {
 
     //sprintln!("pmpcfg0: {:#X}", _pmp_cfg0);
     // Print the PMP configuration registers 8 bits, or byte, at a time
-    print_register_by_byte(_pmp_cfg0,0);
-    print_register_by_byte(_pmp_cfg1,4);
+    print_register_by_byte(_pmp_cfg0, 0);
+    print_register_by_byte(_pmp_cfg1, 4);
 
     loop {}
 }
