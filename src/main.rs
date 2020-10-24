@@ -6,7 +6,7 @@ extern crate panic_halt;
 //use hifive1::sprintln;
 //use riscv::register::{mcause, mepc, mtval};
 use riscv_rt::entry;
-use zerorisc::pmp::pmp_config;
+use zerorisc::pmp::{Pmpconfig,RangeType, Permission};
 use zerorisc::privilege::user_app_entry;
 use zerorisc::uart::config_uart;
 use zerorisc::user::user_app;
@@ -24,7 +24,16 @@ fn main() -> ! {
     //sprintln!("User Entry::{:0X}",user_entry as usize);
 
     // Configure PMP for u-mode permissions
-    pmp_config();
+    let user_data = Pmpconfig{
+        base: 0x2004_0000,
+        size: 0x2004_0000,
+        range_type: RangeType::TOR,
+        pmp_index: 0 as usize,
+        permission: Permission::RWX,
+        locked: false
+    };
+
+    user_data.set();
 
     // Start user app
     unsafe { user_app_entry(user_entry as usize) };
