@@ -17,23 +17,26 @@ fn main() -> ! {
     config_uart();
 
     // Get addresses for the u-mode entry and the trap vector
-    //let trap_address = trap_vector as *const ();
-    let user_entry = user_app as *const (); //Function address
+    //let trap_address = trap_vector as *const();
+    let user_entry = user_app as *const(); //Function address
 
     //sprintln!("Trap Address::{:0X}",trap_address as usize);
     //sprintln!("User Entry::{:0X}",user_entry as usize);
 
     // Configure PMP for u-mode permissions
-    let user_data = Pmpconfig{
-        base: 0x2004_0000,
-        size: 0x2004_0000,
+
+    let pmp0 = Pmpconfig{
+        base: 0x2040_0000,
+        size: 0x2040_0000,
         range_type: RangeType::TOR,
         pmp_index: 0 as usize,
         permission: Permission::RWX,
         locked: false
     };
 
-    user_data.set();
+    pmp0.set();
+
+
 
     // Start user app
     unsafe { user_app_entry(user_entry as usize) };

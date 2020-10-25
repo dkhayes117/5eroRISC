@@ -1,10 +1,11 @@
 //! Trap handling
 
 use hifive1::{sprintln};
-use riscv::register::{mtval,mcause};
+use riscv::register::{mtval,mcause,pmpcfg0, pmpcfg1};
 use mcause::Trap;
 use mcause::Exception::*;
 use riscv_rt::TrapFrame;
+use crate::pmp::{print_pmp_addresses, print_register_by_byte};
 use crate::cpu::dump_registers;
 
 #[export_name = "ExceptionHandler"]
@@ -26,17 +27,18 @@ pub fn trap_handler( trap_frame:&TrapFrame ) -> ! {
             }
         }
         // If Instruction Fault occurs, like a PMP violation
-        Trap::Exception(InstructionFault) => {
-            sprintln!("Instruction Fault Trap Occurred \
-                       Offending address: {}\n", mtval::read())
-        }
+        Trap::Exception(InstructionFault) => { sprintln!("Instruction Fault Trap Occurred\n") }
 
-        Trap::Exception(exception) => { sprintln!("{:?} Exception Trap Occurred\n",exception); panic!() }
+        Trap::Exception(exception) => { sprintln!("{:?} Exception Trap Occurred\n",exception)}
 
-        Trap::Interrupt(interrupt) => { sprintln!("{:?} Exception Trap Occurred\n",interrupt); panic!() }
+        Trap::Interrupt(interrupt) => { sprintln!("{:?} Exception Trap Occurred\n",interrupt)}
 
     }
+    sprintln!("Offending address: {:0X}\n", mtval::read());
     dump_registers(trap_frame);
+    print_register_by_byte(pmpcfg0::read(), 0);
+    print_register_by_byte(pmpcfg1::read(), 4);
+    print_pmp_addresses();
 
     loop{};
 }

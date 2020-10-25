@@ -1,6 +1,7 @@
 //use riscv::register::{mepc,mcause,mtval};
 use riscv_rt::TrapFrame;
 
+pub const STACK_SIZE: usize = 256;
 /// Dumps the registers of a given trap frame. This is NOT the
 /// current CPU registers!
 pub fn dump_registers(trap_frame: &TrapFrame) {
@@ -28,13 +29,13 @@ pub fn dump_registers(trap_frame: &TrapFrame) {
 
     // For creating a user mode stack frame
     // #[allow(dead_code)]
-#[repr(align(16))]
-pub struct StackFrame { stack: [u8; 768] }
+#[repr(C,align(16))]
+pub struct StackFrame { pub stack: [u8; STACK_SIZE] }
 
 impl StackFrame {
     pub const fn new() -> Self {
         StackFrame {
-        stack: [0; 768],
+        stack: [0; STACK_SIZE],
         }
     }
 }

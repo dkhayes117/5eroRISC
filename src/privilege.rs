@@ -1,24 +1,55 @@
 use riscv::register::{mepc,mstatus};
 use riscv::register::mtvec;
 use hifive1::sprintln;
-use crate::cpu::{StackFrame};
+use crate::cpu::{StackFrame, STACK_SIZE};
 use crate::trap::trap_handler;
+use crate::pmp::{Pmpconfig,RangeType, Permission};
+//use crate::pmp::napot_range;
+
 
 pub unsafe fn user_app_entry(user_entry:usize){
         //Create user stack and determine stack pointer and trap handler
-        //let mut user_stack = Align16{ stack: [0;768] };
-        //let raw_ptr: *const Align16 = &user_stack;
-        //let stack_ptr: *const Align16 = raw_ptr.offset(1); //Top of stack
+        let mut user_stack = StackFrame{ stack: [0;STACK_SIZE] };
+        let raw_ptr: *const StackFrame = &user_stack;
+        let stack_ptr: *const StackFrame = raw_ptr.offset(1); //Top of stack
 
+  /*      //Create stack frame for user mode
         let mut user_stack = StackFrame::new();
         let raw_ptr = &user_stack as *const StackFrame as *const();
         let stack_ptr = raw_ptr.offset(1);
+*/
+        sprintln!("bottom of stack::{:0X}", raw_ptr as usize);
+        sprintln!("top of stack::{:0X}", stack_ptr as usize);
 
-        sprintln!("stack address::{:0X}", stack_ptr as usize);
         //sprintln!("Trap Address::{:0X}",trap_address);
         sprintln!("User Entry::{:0X}",user_entry);
 
-        let trap_address = trap_handler as *const ();
+        let trap_address = trap_handler as *const();
+
+        let pmp1 = Pmpconfig{
+                base: raw_ptr as usize,
+                size: STACK_SIZE,
+                range_type: RangeType::OFF,
+                pmp_index: 1 as usize,
+                permission: Permission::RW,
+                locked: false
+        };
+
+        let pmp2 = Pmpconfig{
+                base: 0x80003FFF,
+                size: STACK_SIZE,
+                range_type: RangeType::TOR,
+                pmp_index: 2 as usize,
+                permission: Permission::RW,
+                locked: false
+        };
+
+        pmp1.set();
+        pmp2.set();
+
+        //pmpaddr0::write(0x2040_0000); // All memory can be accessed
+        //pmpaddr1::write(napot_range(raw_ptr as usize, STACK_SIZE)); // All of RAM is accessable
+        //pmpcfg0::write(0x1B0F);
 
         //Setup registers for user mode entry
         mepc::write(user_entry as usize);            // Entry point for user mode
