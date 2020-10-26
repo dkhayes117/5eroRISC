@@ -24,13 +24,19 @@ pub enum RangeType{
 }
 
 #[derive(Clone,Copy)]
+pub enum Mlock{
+    UNLOCKED = 0x0,
+    LOCKED = 0x80
+}
+
+#[derive(Clone,Copy)]
 pub struct Pmpconfig{
     pub base: usize,
     pub size: usize,
     pub range_type: RangeType,
     pub pmp_index: usize,
     pub permission: Permission,
-    pub locked: bool,
+    pub locked: Mlock,
 }
 
 impl Pmpconfig {
@@ -57,8 +63,7 @@ impl Pmpconfig {
     pub fn set(&self) {
         let shift = self.shift_val();
         let mask = 0xFF << shift;
-        let lock = (self.locked as usize) << (shift + 8 as usize);
-        let cfg_value = (self.permission as usize | self.range_type as usize | lock as usize) << shift;
+        let cfg_value = (self.permission as usize | self.range_type as usize | self.locked as usize) << shift;
         let range = self.address();
         match self.pmp_index {
             0 => {pmpcfg0::write(cfg_value | (pmpcfg0::read() & !mask));

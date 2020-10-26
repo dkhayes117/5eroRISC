@@ -3,7 +3,7 @@ use riscv::register::mtvec;
 use hifive1::sprintln;
 use crate::cpu::{StackFrame, STACK_SIZE};
 use crate::trap::trap_handler;
-use crate::pmp::{Pmpconfig,RangeType, Permission};
+use crate::pmp::{Pmpconfig,RangeType, Permission, Mlock};
 //use crate::pmp::napot_range;
 
 
@@ -32,7 +32,7 @@ pub unsafe fn user_app_entry(user_entry:usize){
                 range_type: RangeType::OFF,
                 pmp_index: 1 as usize,
                 permission: Permission::RW,
-                locked: false
+                locked: Mlock::UNLOCKED
         };
 
         let pmp2 = Pmpconfig{
@@ -41,7 +41,7 @@ pub unsafe fn user_app_entry(user_entry:usize){
                 range_type: RangeType::TOR,
                 pmp_index: 2 as usize,
                 permission: Permission::RW,
-                locked: false
+                locked: Mlock::UNLOCKED
         };
 
         pmp1.set();
