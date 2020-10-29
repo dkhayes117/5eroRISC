@@ -24,7 +24,7 @@ pub enum RangeType{
 }
 
 #[derive(Clone,Copy)]
-pub enum Mlock{
+pub enum Lock{
     UNLOCKED = 0x0,
     LOCKED = 0x80
 }
@@ -36,7 +36,7 @@ pub struct Pmpconfig{
     pub range_type: RangeType,
     pub pmp_index: usize,
     pub permission: Permission,
-    pub locked: Mlock,
+    pub locked: Lock,
 }
 
 impl Pmpconfig {

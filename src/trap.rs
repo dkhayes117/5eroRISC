@@ -1,7 +1,7 @@
 //! Trap handling
 
 use hifive1::{sprintln};
-use riscv::register::{mtval,mcause,pmpcfg0, pmpcfg1};
+use riscv::register::{mtval,mcause,mepc, pmpcfg0, pmpcfg1};
 use mcause::Trap;
 use mcause::Exception::*;
 use riscv_rt::TrapFrame;
@@ -11,7 +11,7 @@ use crate::cpu::dump_registers;
 #[export_name = "ExceptionHandler"]
 pub fn trap_handler( trap_frame:&TrapFrame ) -> ! {
     //sprintln!("Trap Entered");
-
+    let epc = mepc::read();
     match mcause::read().cause() {
         // If u-mode ecall occurs
         Trap::Exception(UserEnvCall) => {
@@ -25,6 +25,8 @@ pub fn trap_handler( trap_frame:&TrapFrame ) -> ! {
                 2 => {sprintln!("Call type: Benchmark\n")}
                 _ => {sprintln!("Unknown System Call Detected\n")}
             }
+            mepc::write(epc + 4);
+            unsafe{asm!("mret");}
         }
         // If Instruction Fault occurs, like a PMP violation
         Trap::Exception(InstructionFault) => { sprintln!("Instruction Fault Trap Occurred\n") }

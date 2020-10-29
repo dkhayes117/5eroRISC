@@ -1,12 +1,17 @@
 //use riscv::register::{mepc,mcause,mtval};
 use riscv_rt::TrapFrame;
 
-pub const STACK_SIZE: usize = 256;
+pub const STACK_SIZE: usize = 512;
 /// Dumps the registers of a given trap frame. This is NOT the
 /// current CPU registers!
 pub fn dump_registers(trap_frame: &TrapFrame) {
     use hifive1::sprintln;
+    let sp: usize;
+    unsafe{asm!("mv {}, sp",
+    out(reg) sp);}
+
     sprintln!("Exception Trap Frame Dump\n");
+    sprintln!("sp: {:0X}", sp);
     sprintln!("ra: {:0X}", trap_frame.ra);
     sprintln!("t0: {:0X}", trap_frame.t0);
     sprintln!("t1: {:0X}", trap_frame.t1);
@@ -23,7 +28,7 @@ pub fn dump_registers(trap_frame: &TrapFrame) {
     sprintln!("a5: {:0X}", trap_frame.a5);
     sprintln!("a6: {:0X}", trap_frame.a6);
     sprintln!("a7: {:0X}", trap_frame.a7);
-    sprintln!("\nend trap frame");
+    sprintln!("\nend trap frame\n");
 }
 
 

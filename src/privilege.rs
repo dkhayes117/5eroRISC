@@ -3,13 +3,13 @@ use riscv::register::mtvec;
 use hifive1::sprintln;
 use crate::cpu::{StackFrame, STACK_SIZE};
 use crate::trap::trap_handler;
-use crate::pmp::{Pmpconfig,RangeType, Permission, Mlock};
+use crate::pmp::{Pmpconfig,RangeType, Permission, Lock};
 //use crate::pmp::napot_range;
 
 
 pub unsafe fn user_app_entry(user_entry:usize){
         //Create user stack and determine stack pointer and trap handler
-        let mut user_stack = StackFrame{ stack: [0;STACK_SIZE] };
+        let user_stack = StackFrame{ stack: [0;STACK_SIZE] };
         let raw_ptr: *const StackFrame = &user_stack;
         let stack_ptr: *const StackFrame = raw_ptr.offset(1); //Top of stack
 
@@ -18,8 +18,9 @@ pub unsafe fn user_app_entry(user_entry:usize){
         let raw_ptr = &user_stack as *const StackFrame as *const();
         let stack_ptr = raw_ptr.offset(1);
 */
-        sprintln!("bottom of stack::{:0X}", raw_ptr as usize);
-        sprintln!("top of stack::{:0X}", stack_ptr as usize);
+        sprintln!("bottom of stack frame::{:0X}", raw_ptr as usize);
+        sprintln!("top of stack frame::{:0X}", stack_ptr as usize);
+        sprintln!("&stack_ptr::{:p}", &stack_ptr);
 
         //sprintln!("Trap Address::{:0X}",trap_address);
         sprintln!("User Entry::{:0X}",user_entry);
@@ -27,25 +28,30 @@ pub unsafe fn user_app_entry(user_entry:usize){
         let trap_address = trap_handler as *const();
 
         let pmp1 = Pmpconfig{
-                base: raw_ptr as usize,
-                size: STACK_SIZE,
-                range_type: RangeType::OFF,
-                pmp_index: 1 as usize,
-                permission: Permission::RW,
-                locked: Mlock::UNLOCKED
+            base: raw_ptr as usize,    //raw_ptr as usize
+            size: STACK_SIZE,
+            range_type: RangeType::TOR,
+            pmp_index: 1 as usize,
+            permission: Permission::RW,
+            locked: Lock::UNLOCKED
         };
 
         let pmp2 = Pmpconfig{
-                base: 0x80003FFF,
-                size: STACK_SIZE,
-                range_type: RangeType::TOR,
-                pmp_index: 2 as usize,
-                permission: Permission::RW,
-                locked: Mlock::UNLOCKED
+            base: stack_ptr as usize,
+            size: STACK_SIZE,
+            range_type: RangeType::TOR,
+            pmp_index: 2 as usize,
+            permission: Permission::RW,
+            locked: Lock::UNLOCKED
         };
 
         pmp1.set();
         pmp2.set();
+
+        let sp: usize;
+        asm!("mv {}, sp",
+        out(reg) sp);
+        sprintln!("M-mode sp::{:0X}",sp);
 
         //pmpaddr0::write(0x2040_0000); // All memory can be accessed
         //pmpaddr1::write(napot_range(raw_ptr as usize, STACK_SIZE)); // All of RAM is accessable
@@ -62,7 +68,7 @@ pub unsafe fn user_app_entry(user_entry:usize){
                 "mv ra, zero",
                 "mv sp, {0}",
                 "mret",
-                in(reg) &stack_ptr
+                in(reg) stack_ptr
         );
     }
 
