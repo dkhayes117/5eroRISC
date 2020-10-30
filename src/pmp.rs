@@ -1,10 +1,11 @@
-use riscv::register::{pmpaddr0, pmpaddr1, pmpaddr2, pmpaddr3,
-                      pmpaddr4, pmpaddr5, pmpaddr6, pmpaddr7,
-                      pmpcfg0, pmpcfg1};
 use hifive1::sprintln;
+use riscv::register::{
+    pmpaddr0, pmpaddr1, pmpaddr2, pmpaddr3, pmpaddr4, pmpaddr5, pmpaddr6, pmpaddr7, pmpcfg0,
+    pmpcfg1,
+};
 
-#[derive(Clone,Copy)]
-pub enum Permission{
+#[derive(Clone, Copy)]
+pub enum Permission {
     NONE = 0,
     R = 1,
     W = 2,
@@ -12,25 +13,25 @@ pub enum Permission{
     X = 4,
     RX = 5,
     WX = 6,
-    RWX = 7
+    RWX = 7,
 }
 
-#[derive(Clone,Copy)]
-pub enum RangeType{
+#[derive(Clone, Copy)]
+pub enum RangeType {
     OFF = 0x0,
     TOR = 0x8,
     NA4 = 0x10,
-    NAPOT = 0x18
+    NAPOT = 0x18,
 }
 
-#[derive(Clone,Copy)]
-pub enum Lock{
+#[derive(Clone, Copy)]
+pub enum Lock {
     UNLOCKED = 0x0,
-    LOCKED = 0x80
+    LOCKED = 0x80,
 }
 
-#[derive(Clone,Copy)]
-pub struct Pmpconfig{
+#[derive(Clone, Copy)]
+pub struct Pmpconfig {
     pub base: usize,
     pub size: usize,
     pub range_type: RangeType,
@@ -41,66 +42,70 @@ pub struct Pmpconfig{
 
 impl Pmpconfig {
     ///Find shift value
-    fn shift_val(&self) -> usize{
-        if self.pmp_index > 3{
+    fn shift_val(&self) -> usize {
+        if self.pmp_index > 3 {
             self.pmp_index - 4 * 8
-        }
-        else {
+        } else {
             self.pmp_index * 8
         }
     }
 
     ///Determines address value when not TOR
     fn address(&self) -> usize {
-        match self.range_type{
-            RangeType::TOR => {self.base >> 2}
-            RangeType::OFF => {self.base >> 2}
-            _ => {self.base + ((self.size / 2) - 1) >> 2}
+        match self.range_type {
+            RangeType::TOR => self.base >> 2,
+            RangeType::OFF => self.base >> 2,
+            _ => self.base + ((self.size / 2) - 1) >> 2,
         }
-
     }
     ///Write config and address values
     pub fn set(&self) {
         let shift = self.shift_val();
         let mask = 0xFF << shift;
-        let cfg_value = (self.permission as usize | self.range_type as usize | self.locked as usize) << shift;
+        let cfg_value =
+            (self.permission as usize | self.range_type as usize | self.locked as usize) << shift;
         let range = self.address();
         match self.pmp_index {
-            0 => {pmpcfg0::write(cfg_value | (pmpcfg0::read() & !mask));
-                  pmpaddr0::write(range)
+            0 => {
+                pmpcfg0::write(cfg_value | (pmpcfg0::read() & !mask));
+                pmpaddr0::write(range)
             }
-            1 => {pmpcfg0::write(cfg_value | (pmpcfg0::read() & !mask));
+            1 => {
+                pmpcfg0::write(cfg_value | (pmpcfg0::read() & !mask));
                 pmpaddr1::write(range)
             }
-            2 => {pmpcfg0::write(cfg_value | (pmpcfg0::read() & !mask));
+            2 => {
+                pmpcfg0::write(cfg_value | (pmpcfg0::read() & !mask));
                 pmpaddr2::write(range)
             }
-            3 => {pmpcfg0::write(cfg_value | (pmpcfg0::read() & !mask));
+            3 => {
+                pmpcfg0::write(cfg_value | (pmpcfg0::read() & !mask));
                 pmpaddr3::write(range)
             }
-            4 => {pmpcfg1::write(cfg_value | (pmpcfg1::read() & !mask));
+            4 => {
+                pmpcfg1::write(cfg_value | (pmpcfg1::read() & !mask));
                 pmpaddr4::write(range)
             }
-            5 => {pmpcfg1::write(cfg_value | (pmpcfg1::read() & !mask));
+            5 => {
+                pmpcfg1::write(cfg_value | (pmpcfg1::read() & !mask));
                 pmpaddr5::write(range)
             }
-            6 => {pmpcfg1::write(cfg_value | (pmpcfg1::read() & !mask));
+            6 => {
+                pmpcfg1::write(cfg_value | (pmpcfg1::read() & !mask));
                 pmpaddr6::write(range)
             }
             7 => {
                 pmpcfg1::write(cfg_value | (pmpcfg1::read() & !mask));
                 pmpaddr7::write(range)
             }
-            _ => {panic!()}
-
+            _ => panic!(),
         }
     }
-
 }
 
 pub fn napot_range(base: usize, size: usize) -> usize {
     base + ((size / 2) - 1) >> 2
-    }
+}
 
 // Read the pmp registers
 pub fn print_pmp_addresses() {

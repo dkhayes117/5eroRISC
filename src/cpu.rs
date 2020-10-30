@@ -7,8 +7,10 @@ pub const STACK_SIZE: usize = 512;
 pub fn dump_registers(trap_frame: &TrapFrame) {
     use hifive1::sprintln;
     let sp: usize;
-    unsafe{asm!("mv {}, sp",
-    out(reg) sp);}
+    unsafe {
+        asm!("mv {}, sp",
+    out(reg) sp);
+    }
 
     sprintln!("Exception Trap Frame Dump\n");
     sprintln!("sp: {:0X}", sp);
@@ -31,20 +33,21 @@ pub fn dump_registers(trap_frame: &TrapFrame) {
     sprintln!("\nend trap frame\n");
 }
 
-
-    // For creating a user mode stack frame
-    // #[allow(dead_code)]
-#[repr(C,align(16))]
-pub struct StackFrame { pub stack: [u8; STACK_SIZE] }
-
+// For creating a user mode stack frame
+// #[allow(dead_code)]
+#[repr(C, align(16))]
+pub struct StackFrame {
+    pub stack: [u8; STACK_SIZE],
+}
+/*
 impl StackFrame {
     pub const fn new() -> Self {
         StackFrame {
-        stack: [0; STACK_SIZE],
+            stack: [0; STACK_SIZE],
         }
     }
 }
-
+*/
 //store cpu state
 /*
 #[derive(Clone, Copy)]
