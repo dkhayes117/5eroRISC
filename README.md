@@ -78,6 +78,17 @@ This may result in huge binaries as well as overwrite the HiFive1 bootloader wit
 
 If your bootloader is damaged, you will not see the green led blinking when you reset the board. In this case, you can restore the bootloader with the procedure described in the [`hifive1-recover` repo](https://github.com/riscv-rust/hifive1-recover/).
 
+## Debugging
+
+Run your program, then use GDBserver to debug the program with continue, next, step, break, etc by stopping the program with `ctrl+C`.
+```
+gdb$ target remote localhost:3333
+gdb$ break src/main.rs:1
+gdb$ layout regs
+gdb$ jump _start
+gdb$ list
+```
+These are a few commands to get started debugging a program.  Use next to go line by line, step goes through each instruction, continue jumps to breakpoints.  
 
 ## License
 Copyright 2017-2019 [RISC-V team][team]
