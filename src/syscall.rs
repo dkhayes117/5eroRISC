@@ -7,7 +7,6 @@ pub enum SyscallType {
 
 pub unsafe fn syscall(_call_type: SyscallType, _param1: usize, _param2: usize) {
     asm!("ecall");
-    //let mut trap_frame = &TrapFrame{};
 }
 
 pub unsafe fn syscall_asm() {

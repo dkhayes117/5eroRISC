@@ -1,8 +1,8 @@
 use crate::cpu::{StackFrame, STACK_SIZE};
 use crate::pmp::{Lock, Permission, Pmpconfig, RangeType};
-use crate::trap::trap_handler;
+//use crate::trap::trap_handler;
 use hifive1::sprintln;
-use riscv::register::mtvec;
+//use riscv::register::mtvec;
 use riscv::register::{mcounteren, mepc, mstatus};
 //use crate::pmp::napot_range;
 
@@ -20,10 +20,10 @@ pub unsafe fn user_app_entry(user_entry: usize) {
     //sprintln!("Trap Address::{:0X}",trap_address);
     sprintln!("User Entry::{:0X}", user_entry);
 
-    let trap_address = trap_handler as *const ();
+    //let trap_address = trap_handler as *const ();
 
     let pmp1 = Pmpconfig {
-        base: raw_ptr as usize, //raw_ptr as usize
+        base: 0x8000_0000, //raw_ptr as usize
         size: STACK_SIZE,
         range_type: RangeType::TOR,
         pmp_index: 1 as usize,
@@ -32,7 +32,7 @@ pub unsafe fn user_app_entry(user_entry: usize) {
     };
 
     let pmp2 = Pmpconfig {
-        base: stack_ptr as usize,
+        base: 0x8000_4000, //stack_ptr as usize
         size: STACK_SIZE,
         range_type: RangeType::TOR,
         pmp_index: 2 as usize,
@@ -60,7 +60,7 @@ pub unsafe fn user_app_entry(user_entry: usize) {
     //Setup registers for user mode entry
     mepc::write(user_entry as usize); // Entry point for user mode
     mstatus::set_mpp(mstatus::MPP::User); //previous privilege set to user
-    mtvec::write(trap_address as usize, mtvec::TrapMode::Direct);
+    //mtvec::write(trap_address as usize, mtvec::TrapMode::Direct);
     mstatus::clear_mie();
     mstatus::set_mpie();
 

@@ -6,14 +6,8 @@ pub const STACK_SIZE: usize = 512;
 /// current CPU registers!
 pub fn dump_registers(trap_frame: &TrapFrame) {
     use hifive1::sprintln;
-    let sp: usize;
-    unsafe {
-        asm!("mv {}, sp",
-    out(reg) sp);
-    }
 
     sprintln!("Exception Trap Frame Dump\n");
-    sprintln!("sp: {:0X}", sp);
     sprintln!("ra: {:0X}", trap_frame.ra);
     sprintln!("t0: {:0X}", trap_frame.t0);
     sprintln!("t1: {:0X}", trap_frame.t1);

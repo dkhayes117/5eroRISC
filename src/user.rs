@@ -1,12 +1,11 @@
 // User Application
 //use riscv::register::{cycle,instret};
-//use crate::syscall::{syscall,SyscallType};
+use crate::syscall::{syscall,SyscallType};
 //use crate::syscall::{syscall_asm};
+//use riscv::register::minstret;
 
 pub fn user_app() {
     //sprintln!("User Mode Entered!");  // Verify that user mode has been entered
-    //let p1: usize = 22;
-    //let p2: usize = 44;
 
     //minstret::read();   //Attempt to access so we know we returned to user mode
 
@@ -38,7 +37,7 @@ pub fn user_app() {
         }
     }
 
-    let mut primes: [u16; 1000] = [0; 1000];
+    let mut primes: [u16; 10] = [0; 10];
     for i in 2..=primes.len() - 1 {
         primes[i] = i as u16;
     }
@@ -54,8 +53,8 @@ pub fn user_app() {
     //let _instructions = instret::read();
 
     //unsafe{syscall_asm()};
-    //unsafe{syscall(SyscallType::ConsoleOut,p1, p2);}
-    unsafe{asm!("ecall")};
+    unsafe{syscall(SyscallType::ConsoleOut,22, 24);}
+    //unsafe{asm!("ecall")};
 
     //minstret::read();   //Attempt to access so we know we returned to user mode
 
