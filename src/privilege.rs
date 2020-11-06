@@ -23,7 +23,7 @@ pub unsafe fn user_app_entry(user_entry: usize) {
     //let trap_address = trap_handler as *const ();
 
     let pmp1 = Pmpconfig {
-        base: 0x8000_0000, //raw_ptr as usize
+        base: raw_ptr as usize, //raw_ptr as usize
         size: STACK_SIZE,
         range_type: RangeType::TOR,
         pmp_index: 1 as usize,
@@ -32,7 +32,7 @@ pub unsafe fn user_app_entry(user_entry: usize) {
     };
 
     let pmp2 = Pmpconfig {
-        base: 0x8000_4000, //stack_ptr as usize
+        base: stack_ptr as usize, //stack_ptr as usize
         size: STACK_SIZE,
         range_type: RangeType::TOR,
         pmp_index: 2 as usize,
@@ -48,10 +48,6 @@ pub unsafe fn user_app_entry(user_entry: usize) {
         out(reg) sp);
     sprintln!("M-mode sp::{:0X}", sp);
 
-    //pmpaddr0::write(0x2040_0000); // All memory can be accessed
-    //pmpaddr1::write(napot_range(raw_ptr as usize, STACK_SIZE)); // All of RAM is accessable
-    //pmpcfg0::write(0x1B0F);
-
     //Setup mcounteren to allow u-mode access to cycle, instret, and time
     mcounteren::set_cy();
     mcounteren::set_ir();
@@ -60,7 +56,6 @@ pub unsafe fn user_app_entry(user_entry: usize) {
     //Setup registers for user mode entry
     mepc::write(user_entry as usize); // Entry point for user mode
     mstatus::set_mpp(mstatus::MPP::User); //previous privilege set to user
-    //mtvec::write(trap_address as usize, mtvec::TrapMode::Direct);
     mstatus::clear_mie();
     mstatus::set_mpie();
 

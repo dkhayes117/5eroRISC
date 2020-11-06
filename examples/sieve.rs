@@ -1,25 +1,97 @@
 #![no_std]
 #![no_main]
+#![feature(asm)]
 
 extern crate panic_halt;
 
 use hifive1::hal::prelude::*;
 use hifive1::hal::DeviceResources;
 use hifive1::{pin, sprintln};
-use riscv::register::{mcycle, minstret, time};
-use riscv_rt::entry;
+use riscv::register::{cycle, instret, mcause, mcounteren, mstatus, mepc, pmpaddr0, pmpcfg0};
+use riscv_rt::{entry, TrapFrame};
 
-// Function to eliminate integers that are not prime
-fn sieve(primes: &mut [u16], factor: u16) {
-    for i in 0..primes.len() {
-        let value = primes[i];
-        if value != 0 && value != factor {
-            if value % factor == 0 {
-                primes[i] = 0;
+//Number of times to run sieve
+const COUNT: usize = 10;
+
+// This creates a 16 byte aligned memory space for user mode operation
+#[repr(C, align(16))]
+#[allow(dead_code)]
+struct Align16 {
+    stack: [u8; 768],
+}
+
+fn benchmark() -> usize {
+    // Function to eliminate integers that are not prime
+    fn sieve(primes: &mut [u16], factor: u16) {
+        for i in 0..primes.len() {
+            let value = primes[i];
+            if value != 0 && value != factor {
+                if value % factor == 0 {
+                    primes[i] = 0;
+                }
             }
         }
     }
+
+    let mut cycles: [usize;COUNT] = [0;COUNT];
+
+    //unsafe{mcounteren::set_tm();}
+    for i in 0..cycles.len() {
+
+        let start_cycles = cycle::read();
+
+        // create array for prime sieve
+        let mut primes: [u16; 250] = [0; 250];
+        for i in 2..=primes.len() - 1 {
+            primes[i] = i as u16;
+        }
+
+        for i in 0..primes.len() {
+            let factor = primes[i];
+            if factor != 0 {
+                sieve(&mut primes, factor);
+            }
+        }
+
+        let end_cycles = cycle::read();
+
+        let total_cycles = end_cycles - start_cycles;
+
+        cycles[i] = total_cycles;
+    }
+    average(cycles)
 }
+
+
+fn average(array:[usize;COUNT]) -> usize{
+    array.iter().sum::<usize>()/array.len()
+}
+
+// This function handles machine traps due to interrupts or exceptions
+#[export_name = "ExceptionHandler"]
+fn trap_handler(trap_frame: &TrapFrame) {
+    use mcause::Trap;
+    match mcause::read().cause() {
+        Trap::Exception(exception) => sprintln!("TRAP::Exception Reason::{:?}", exception),
+        Trap::Interrupt(interrupt) => sprintln!("{:?} Interrupt Trap Occurred\n", interrupt)
+    }
+    sprintln!("Avg U-Cycle Count: {}", trap_frame.a0);
+    loop {}
+}
+
+unsafe fn syscall(_cycles: usize) {
+    asm!("ecall");
+}
+
+// Function to use as entry for user mode
+fn user_mode() {
+    let _cache_prime = benchmark();
+    let u_bench = benchmark();
+    unsafe { syscall(u_bench) };
+
+    loop {}
+}
+
 
 #[entry]
 fn main() -> ! {
@@ -39,39 +111,36 @@ fn main() -> ! {
         clocks,
     );
 
-    //Enable and initialize performance counter
-    let start_cycles = mcycle::read();
-    let start_instructions = minstret::read();
-    //let start_time = time::read();
+    sprintln!("Starting Benchmark Test, Iterations: {}", COUNT);
+    let cache_prime = benchmark();
+    let m_bench = benchmark();
+    sprintln!("Avg M-Cycle Count: {}", m_bench);
 
-    // create array for prime sieve
+    //Create user stack and determine stack pointer and trap handler
+    let mut user_stack = Align16 { stack: [0; 768] };
+    let raw_ptr: *const Align16 = &user_stack;
+    let stack_ptr: *const Align16 = unsafe { raw_ptr.offset(1) }; //Top of stack
+    let user_entry = user_mode as *const (); //Function address
 
-    let mut primes: [u16; 1000] = [0; 1000];
-    for i in 2..=primes.len() - 1 {
-        primes[i] = i as u16;
-    }
+    //Setup PMP
+    let permissions: usize = 0xF; //TOR alignment with RWX permissions
+    pmpaddr0::write(0x20001000); // All flash memory available
+    pmpcfg0::write(permissions);
 
-    for i in 0..primes.len() {
-        let factor = primes[i];
-        if factor != 0 {
-            sieve(&mut primes, factor);
-        }
-    }
+    //Setup registers for user mode entry
+    mepc::write(user_entry as usize); // Entry point for user mode
 
-    //let end_time = time::read();
-    let end_cycles = mcycle::read();
-    let end_instructions = minstret::read();
+    unsafe {
+        mcounteren::set_cy();
+        mstatus::set_mpp(mstatus::MPP::User);
+        mstatus::clear_mie();
+        mstatus::set_mpie();
 
-    let total_cycles = end_cycles - start_cycles;
-    let total_instructions = end_instructions - start_instructions;
-    //let total_time = end_time - start_time;
-
-    sprintln!(
-        "Cycle Count: {}, Instruction Count: {}",
-        total_cycles,
-        total_instructions
-    );
-    //sprintln!("Cycle Count: {}, Instruction Count: {}, Time: {}",total_cycles,total_instructions, total_time);
+        asm!("mv ra, zero",
+        "mv sp, {0}",
+        "mret",
+        in(reg) stack_ptr);
+    };
 
     loop {}
 }

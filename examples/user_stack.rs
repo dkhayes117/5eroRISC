@@ -12,7 +12,7 @@ use riscv_rt::entry;
 use riscv::register::{mcause, mepc, mstatus, mtval, mtvec, pmpaddr0, pmpcfg0};
 
 // This creates a 16 byte aligned memory space for user mode operation
-#[repr(align(16))]
+#[repr(C, align(16))]
 #[allow(dead_code)]
 struct Align16 {
     stack: [u8; 768],
@@ -92,7 +92,7 @@ fn main() -> ! {
         asm!("mv ra, zero",
         "mv sp, {0}",
         "mret",
-        in(reg) &stack_ptr);
+        in(reg) stack_ptr);
     };
 
     loop {}
