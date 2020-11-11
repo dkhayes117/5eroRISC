@@ -39,6 +39,33 @@ pub fn stack_overflow(){
     }
 }
 
+pub fn benchmark(){
+    // Function to eliminate integers that are not prime
+    fn sieve(primes: &mut [u16], factor: u16) {
+        for i in 0..primes.len() {
+            let value = primes[i];
+            if value != 0 && value != factor {
+                if value % factor == 0 {
+                    primes[i] = 0;
+                }
+            }
+        }
+    }
+
+    // create array for prime sieve
+    let mut primes: [u16;500] = [0;500];
+    for i in 2..=primes.len() - 1 {
+        primes[i] = i as u16;
+    }
+
+    for i in 0..primes.len() {
+        let factor = primes[i];
+        if factor != 0 {
+            sieve(&mut primes, factor);
+        }
+    }
+}
+
 /*
 impl StackFrame {
     pub const fn new() -> Self {

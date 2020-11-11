@@ -7,7 +7,7 @@ extern crate panic_halt;
 use hifive1::hal::prelude::*;
 use hifive1::hal::DeviceResources;
 use hifive1::{pin, sprintln};
-use riscv::register::{cycle,  mcause, mcounteren, mstatus, mepc, pmpaddr0, pmpcfg0};
+use riscv::register::{cycle, instret, mcause, mcounteren, mstatus, mepc, pmpaddr0, pmpcfg0};
 use riscv_rt::{entry, TrapFrame};
 
 // Number of times to run sieve

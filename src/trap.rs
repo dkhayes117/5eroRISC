@@ -29,7 +29,10 @@ pub fn trap_handler(trap_frame: &TrapFrame) {
                     return;
                 }
                 2 => {
-                    sprintln!("Call type: Benchmark\n")
+                    use crate::cpu::benchmark;
+                    benchmark();
+                    mepc::write(epc + 4);
+                    return;
                 }
                 _ => {
                     sprintln!("Unknown System Call Detected\n");
