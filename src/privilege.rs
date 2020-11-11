@@ -1,8 +1,6 @@
 use crate::cpu::{StackFrame, STACK_SIZE};
 use crate::pmp::{Lock, Permission, Pmpconfig, RangeType};
-//use crate::trap::trap_handler;
-use hifive1::sprintln;
-//use riscv::register::mtvec;
+//use hifive1::sprintln;
 use riscv::register::{mcounteren, mepc, mstatus};
 //use crate::pmp::napot_range;
 
@@ -14,11 +12,11 @@ pub unsafe fn user_app_entry(user_entry: usize) {
     let raw_ptr: *const StackFrame = &user_stack;
     let stack_ptr: *const StackFrame = raw_ptr.offset(1); //Top of stack
 
-    sprintln!("bottom of stack frame::{:0X}", raw_ptr as usize);
-    sprintln!("top of stack frame::{:0X}", stack_ptr as usize);
+    //sprintln!("bottom of stack frame::{:0X}", raw_ptr as usize);
+    //sprintln!("top of stack frame::{:0X}", stack_ptr as usize);
 
     //sprintln!("Trap Address::{:0X}",trap_address);
-    sprintln!("User Entry::{:0X}", user_entry);
+    //sprintln!("User Entry::{:0X}", user_entry);
 
     //let trap_address = trap_handler as *const ();
 
@@ -42,12 +40,12 @@ pub unsafe fn user_app_entry(user_entry: usize) {
 
     pmp1.set();
     pmp2.set();
-
+/*
     let sp: usize;
     asm!("mv {}, sp",
         out(reg) sp);
     sprintln!("M-mode sp::{:0X}", sp);
-
+*/
     //Setup mcounteren to allow u-mode access to cycle, instret, and time
     mcounteren::set_cy();
     mcounteren::set_ir();

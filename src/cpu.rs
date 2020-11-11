@@ -1,12 +1,15 @@
 //use riscv::register::{mepc,mcause,mtval};
 use riscv_rt::TrapFrame;
-
+use hifive1::sprintln;
 pub const STACK_SIZE: usize = 512;
-/// Dumps the registers of a given trap frame. This is NOT the
-/// current CPU registers!
-pub fn dump_registers(trap_frame: &TrapFrame) {
-    use hifive1::sprintln;
 
+/// For creating a user mode stack frame
+#[repr(C, align(16))]
+pub struct StackFrame {
+    pub stack: [u8; STACK_SIZE],
+}
+/// Dumps the registers of a given trap frame. This is NOT the current CPU registers!
+pub fn dump_registers(trap_frame: &TrapFrame) {
     sprintln!("Exception Trap Frame Dump\n");
     sprintln!("ra: {:0X}", trap_frame.ra);
     sprintln!("t0: {:0X}", trap_frame.t0);
@@ -27,12 +30,15 @@ pub fn dump_registers(trap_frame: &TrapFrame) {
     sprintln!("\nend trap frame\n");
 }
 
-// For creating a user mode stack frame
-// #[allow(dead_code)]
-#[repr(C, align(16))]
-pub struct StackFrame {
-    pub stack: [u8; STACK_SIZE],
+/// Function to cause a stack overflow to test PMP protection
+pub fn stack_overflow(){
+    unsafe{
+        asm!(
+            "addi sp, sp, 16",
+        )
+    }
 }
+
 /*
 impl StackFrame {
     pub const fn new() -> Self {

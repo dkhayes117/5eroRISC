@@ -7,10 +7,10 @@ extern crate panic_halt;
 use hifive1::hal::prelude::*;
 use hifive1::hal::DeviceResources;
 use hifive1::{pin, sprintln};
-use riscv::register::{cycle, instret, mcause, mcounteren, mstatus, mepc, pmpaddr0, pmpcfg0};
+use riscv::register::{cycle,  mcause, mcounteren, mstatus, mepc, pmpaddr0, pmpcfg0};
 use riscv_rt::{entry, TrapFrame};
 
-//Number of times to run sieve
+// Number of times to run sieve
 const COUNT: usize = 10;
 
 // This creates a 16 byte aligned memory space for user mode operation
@@ -34,12 +34,12 @@ fn benchmark() -> usize {
     }
 
     let mut cycles: [usize;COUNT] = [0;COUNT];
+    //let mut instructions: usize = 0;
 
-    //unsafe{mcounteren::set_tm();}
     for i in 0..cycles.len() {
 
         let start_cycles = cycle::read();
-
+        //let start_instructions = instret::read();
         // create array for prime sieve
         let mut primes: [u16; 250] = [0; 250];
         for i in 2..=primes.len() - 1 {
@@ -52,14 +52,15 @@ fn benchmark() -> usize {
                 sieve(&mut primes, factor);
             }
         }
-
+        //let end_instructions = instret::read();
         let end_cycles = cycle::read();
 
         let total_cycles = end_cycles - start_cycles;
-
+        //instructions = end_instructions - start_instructions;
         cycles[i] = total_cycles;
     }
     average(cycles)
+    //instructions
 }
 
 
@@ -88,8 +89,6 @@ fn user_mode() {
     let _cache_prime = benchmark();
     let u_bench = benchmark();
     unsafe { syscall(u_bench) };
-
-    loop {}
 }
 
 
@@ -111,13 +110,18 @@ fn main() -> ! {
         clocks,
     );
 
+    unsafe{
+        mcounteren::set_tm();
+        mcounteren::set_ir();
+    }
+
     sprintln!("Starting Benchmark Test, Iterations: {}", COUNT);
-    let cache_prime = benchmark();
+    let _cache_prime = benchmark();
     let m_bench = benchmark();
     sprintln!("Avg M-Cycle Count: {}", m_bench);
 
     //Create user stack and determine stack pointer and trap handler
-    let mut user_stack = Align16 { stack: [0; 768] };
+    let user_stack = Align16 { stack: [0; 768] };
     let raw_ptr: *const Align16 = &user_stack;
     let stack_ptr: *const Align16 = unsafe { raw_ptr.offset(1) }; //Top of stack
     let user_entry = user_mode as *const (); //Function address

@@ -1,3 +1,5 @@
+//use core::fmt::Display;
+
 //use riscv_rt::TrapFrame;
 pub enum SyscallType {
     Exit = 0,
@@ -5,10 +7,7 @@ pub enum SyscallType {
     Benchmark = 2,
 }
 
-pub unsafe fn syscall(_call_type: SyscallType, _param1: usize, _param2: usize) {
+pub unsafe fn syscall (_call_type: SyscallType, _x: usize) {
     asm!("ecall");
 }
 
-pub unsafe fn syscall_asm() {
-    asm!("ecall")
-}

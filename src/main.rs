@@ -4,7 +4,7 @@
 extern crate panic_halt;
 
 //use hifive1::sprintln;
-//use riscv::register::{mcause, mepc, mtval};
+//use riscv::register::{cycle, instret};
 use riscv_rt::entry;
 use zerorisc::pmp::{Lock, Permission, Pmpconfig, RangeType};
 use zerorisc::privilege::user_app_entry;
@@ -30,7 +30,7 @@ fn main() -> ! {
         size: 0x2040_0000,
         range_type: RangeType::TOR,
         pmp_index: 0 as usize,
-        permission: Permission::RWX,
+        permission: Permission::RX,
         locked: Lock::UNLOCKED,
     };
 
