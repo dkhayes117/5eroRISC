@@ -2,12 +2,12 @@
 
 use crate::cpu::dump_registers;
 use crate::pmp::{print_pmp_addresses, print_register_by_byte};
-//use crate::uart::UART_RX;
 use mcause::Exception::*;
 use mcause::Trap;
 use riscv::register::{mcause, mepc, mtval, pmpcfg0, pmpcfg1};
 use riscv_rt::TrapFrame;
 use hifive1::sprintln;
+//use crate::uart::UART_RX;
 //use embedded_hal::serial::Read;
 
 #[export_name = "ExceptionHandler"]
@@ -31,6 +31,16 @@ pub fn trap_handler(trap_frame: &TrapFrame) {
                 2 => {
                     use crate::cpu::benchmark;
                     benchmark();
+                    mepc::write(epc + 4);
+                    return;
+                }
+                3 => {
+                    use crate::cpu::context_switch;
+                    context_switch();
+                    mepc::write(epc + 4);
+                    return;
+                }
+                4 => {
                     mepc::write(epc + 4);
                     return;
                 }

@@ -66,6 +66,21 @@ pub fn benchmark(){
     }
 }
 
+pub fn context_switch(){
+    use riscv::register::{pmpcfg0, pmpaddr0, pmpaddr1, pmpaddr2, pmpaddr3,
+                          pmpaddr4, pmpaddr5, pmpaddr6, pmpaddr7};
+    pmpcfg0::write(0x20B0B0D);
+    pmpaddr0::write(0x810_0000);
+    pmpaddr1::write(0x2000_1000);
+    pmpaddr2::write(0x2000_1000);
+    pmpaddr3::write(0x2000_1000);
+    pmpaddr4::write(0x2000_1000);
+    pmpaddr5::write(0x2000_1000);
+    pmpaddr6::write(0x2000_1000);
+    pmpaddr7::write(0x2000_1000);
+
+}
+
 /*
 impl StackFrame {
     pub const fn new() -> Self {
