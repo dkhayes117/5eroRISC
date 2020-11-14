@@ -1,6 +1,6 @@
 //use riscv::register::{mepc,mcause,mtval};
-use riscv_rt::TrapFrame;
 use hifive1::sprintln;
+use riscv_rt::TrapFrame;
 pub const STACK_SIZE: usize = 512;
 
 /// For creating a user mode stack frame
@@ -31,15 +31,11 @@ pub fn dump_registers(trap_frame: &TrapFrame) {
 }
 
 /// Function to cause a stack overflow to test PMP protection
-pub fn stack_overflow(){
-    unsafe{
-        asm!(
-            "addi sp, sp, 16",
-        )
-    }
+pub fn stack_overflow() {
+    unsafe { asm!("addi sp, sp, 16",) }
 }
 
-pub fn benchmark(){
+pub fn benchmark() {
     // Function to eliminate integers that are not prime
     fn sieve(primes: &mut [u16], factor: u16) {
         for i in 0..primes.len() {
@@ -53,7 +49,7 @@ pub fn benchmark(){
     }
 
     // create array for prime sieve
-    let mut primes: [u16;500] = [0;500];
+    let mut primes: [u16; 500] = [0; 500];
     for i in 2..=primes.len() - 1 {
         primes[i] = i as u16;
     }
@@ -66,9 +62,10 @@ pub fn benchmark(){
     }
 }
 
-pub fn context_switch(){
-    use riscv::register::{pmpcfg0, pmpaddr0, pmpaddr1, pmpaddr2, pmpaddr3,
-                          pmpaddr4, pmpaddr5, pmpaddr6, pmpaddr7};
+pub fn context_switch() {
+    use riscv::register::{
+        pmpaddr0, pmpaddr1, pmpaddr2, pmpaddr3, pmpaddr4, pmpaddr5, pmpaddr6, pmpaddr7, pmpcfg0,
+    };
     pmpcfg0::write(0x20B0B0D);
     pmpaddr0::write(0x810_0000);
     pmpaddr1::write(0x2000_1000);
@@ -78,7 +75,6 @@ pub fn context_switch(){
     pmpaddr5::write(0x2000_1000);
     pmpaddr6::write(0x2000_1000);
     pmpaddr7::write(0x2000_1000);
-
 }
 
 /*

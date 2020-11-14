@@ -7,7 +7,7 @@ extern crate panic_halt;
 use hifive1::hal::prelude::*;
 use hifive1::hal::DeviceResources;
 use hifive1::{pin, sprintln};
-use riscv::register::{cycle, instret, mcause, mcounteren, mstatus, mepc, pmpaddr0, pmpcfg0};
+use riscv::register::{cycle, instret, mcause, mcounteren, mepc, mstatus, pmpaddr0, pmpcfg0};
 use riscv_rt::{entry, TrapFrame};
 
 // Number of times to run sieve
@@ -33,11 +33,10 @@ fn benchmark() -> usize {
         }
     }
 
-    let mut cycles: [usize;COUNT] = [0;COUNT];
+    let mut cycles: [usize; COUNT] = [0; COUNT];
     //let mut instructions: usize = 0;
 
     for i in 0..cycles.len() {
-
         let start_cycles = cycle::read();
         //let start_instructions = instret::read();
         // create array for prime sieve
@@ -63,9 +62,8 @@ fn benchmark() -> usize {
     //instructions
 }
 
-
-fn average(array:[usize;COUNT]) -> usize{
-    array.iter().sum::<usize>()/array.len()
+fn average(array: [usize; COUNT]) -> usize {
+    array.iter().sum::<usize>() / array.len()
 }
 
 // This function handles machine traps due to interrupts or exceptions
@@ -74,7 +72,7 @@ fn trap_handler(trap_frame: &TrapFrame) {
     use mcause::Trap;
     match mcause::read().cause() {
         Trap::Exception(exception) => sprintln!("TRAP::Exception Reason::{:?}", exception),
-        Trap::Interrupt(interrupt) => sprintln!("{:?} Interrupt Trap Occurred\n", interrupt)
+        Trap::Interrupt(interrupt) => sprintln!("{:?} Interrupt Trap Occurred\n", interrupt),
     }
     sprintln!("Avg U-Cycle Count: {}", trap_frame.a0);
     loop {}
@@ -90,7 +88,6 @@ fn user_mode() {
     let u_bench = benchmark();
     unsafe { syscall(u_bench) };
 }
-
 
 #[entry]
 fn main() -> ! {
@@ -110,7 +107,7 @@ fn main() -> ! {
         clocks,
     );
 
-    unsafe{
+    unsafe {
         mcounteren::set_tm();
         mcounteren::set_ir();
     }

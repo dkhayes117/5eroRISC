@@ -1,7 +1,7 @@
 // User Application
 
-use riscv::register::{cycle};
 use crate::syscall::{syscall, SyscallType};
+use riscv::register::cycle;
 //use crate::cpu::stack_overflow;
 //use riscv::register::minstret;
 
@@ -9,6 +9,9 @@ pub fn user_app() {
     //stack_overflow();
 
     // Benchmarking
+    unsafe { syscall(SyscallType::Syscall, 0) }
+    unsafe { syscall(SyscallType::Syscall, 0) }
+
     let start = cycle::read();
     unsafe { syscall(SyscallType::Syscall, 0) }
     //unsafe { syscall(SyscallType::ContextSwitch, 0) }

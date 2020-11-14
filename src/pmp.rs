@@ -4,7 +4,7 @@ use riscv::register::{
     pmpcfg1,
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum Permission {
     NONE = 0,
     R = 1,
@@ -16,7 +16,7 @@ pub enum Permission {
     RWX = 7,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum RangeType {
     OFF = 0x0,
     TOR = 0x8,
@@ -24,13 +24,13 @@ pub enum RangeType {
     NAPOT = 0x18,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum Lock {
     UNLOCKED = 0x0,
     LOCKED = 0x80,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Pmpconfig {
     pub base: usize,
     pub size: usize,

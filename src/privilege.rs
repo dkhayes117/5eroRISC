@@ -40,16 +40,15 @@ pub unsafe fn user_app_entry(user_entry: usize) {
 
     pmp1.set();
     pmp2.set();
-/*
-    let sp: usize;
-    asm!("mv {}, sp",
-        out(reg) sp);
-    sprintln!("M-mode sp::{:0X}", sp);
-*/
+    /*
+        let sp: usize;
+        asm!("mv {}, sp",
+            out(reg) sp);
+        sprintln!("M-mode sp::{:0X}", sp);
+    */
     //Setup mcounteren to allow u-mode access to cycle, instret, and time
     mcounteren::set_cy();
     mcounteren::set_ir();
-    mcounteren::set_tm();
 
     //Setup registers for user mode entry
     mepc::write(user_entry as usize); // Entry point for user mode

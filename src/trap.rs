@@ -2,17 +2,18 @@
 
 use crate::cpu::dump_registers;
 use crate::pmp::{print_pmp_addresses, print_register_by_byte};
+use hifive1::sprintln;
 use mcause::Exception::*;
 use mcause::Trap;
 use riscv::register::{mcause, mepc, mtval, pmpcfg0, pmpcfg1};
 use riscv_rt::TrapFrame;
-use hifive1::sprintln;
 //use crate::uart::UART_RX;
 //use embedded_hal::serial::Read;
 
 #[export_name = "ExceptionHandler"]
 pub fn trap_handler(trap_frame: &TrapFrame) {
     let epc = mepc::read();
+
     match mcause::read().cause() {
         // If u-mode ecall occurs
         Trap::Exception(UserEnvCall) => {
@@ -20,7 +21,7 @@ pub fn trap_handler(trap_frame: &TrapFrame) {
             match trap_frame.a0 {
                 0 => {
                     sprintln!("Call type: Exit\n");
-                    loop {};
+                    loop {}
                 }
                 1 => {
                     //sprintln!("Call type: ConsoleOut");
@@ -30,7 +31,11 @@ pub fn trap_handler(trap_frame: &TrapFrame) {
                 }
                 2 => {
                     use crate::cpu::benchmark;
+                    use riscv::register::cycle;
+                    let start = cycle::read();
                     benchmark();
+                    let end = cycle::read();
+                    sprintln!("PMP Benchmarking: {}", end - start);
                     mepc::write(epc + 4);
                     return;
                 }
@@ -45,7 +50,7 @@ pub fn trap_handler(trap_frame: &TrapFrame) {
                     return;
                 }
                 _ => {
-                    sprintln!("Unknown System Call Detected\n");
+                    sprintln!("Unknown System Call Detected: {}\n", trap_frame.a0);
                     panic!();
                 }
             }
@@ -55,7 +60,7 @@ pub fn trap_handler(trap_frame: &TrapFrame) {
             sprintln!("Illegal Instruction Trap Occurred");
             sprintln!("Illegal Instruction: {:0X}\n", mtval::read());
         }
-/*
+        /*
         Trap::Exception(Breakpoint) => {
             unsafe{
                 sprintln!("Press Any Key to Continue");
@@ -66,7 +71,6 @@ pub fn trap_handler(trap_frame: &TrapFrame) {
             mepc::write(epc + 4);
         }
         */
-
         Trap::Exception(exception) => sprintln!("{:?} Exception Trap Occurred\n", exception),
 
         Trap::Interrupt(interrupt) => sprintln!("{:?} Interrupt Trap Occurred\n", interrupt),

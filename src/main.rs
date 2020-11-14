@@ -17,13 +17,15 @@ fn main() -> ! {
     //Setup UART for printing to the console
     config_uart();
 /*
-    // Benchmarking
+       // Benchmarking
+    benchmark();
+    benchmark();
     let start = cycle::read();
     benchmark();
     let end = cycle::read();
     sprintln!("M-mode cycles {}", end -start);
+*/
 
- */
 
     // Get addresses for the u-mode entry and the trap vector
     //let trap_address = trap_vector as *const();

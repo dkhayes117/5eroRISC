@@ -1,8 +1,8 @@
+use hifive1::hal::e310x::UART0;
 use hifive1::hal::prelude::*;
+use hifive1::hal::serial::Rx;
 use hifive1::hal::DeviceResources;
 use hifive1::pin;
-use hifive1::hal::e310x::UART0;
-use hifive1::hal::serial::Rx;
 
 pub static mut UART_RX: Option<Rx<UART0>> = None;
 
@@ -23,8 +23,6 @@ pub fn config_uart() {
             pin!(pins, uart0_rx),
             115_200.bps(),
             clocks,
-        )
-        );
+        ));
     }
 }
-
