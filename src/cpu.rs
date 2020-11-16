@@ -31,8 +31,14 @@ pub fn dump_registers(trap_frame: &TrapFrame) {
 }
 
 /// Function to cause a stack overflow to test PMP protection
+ #[inline(never)]
 pub fn stack_overflow() {
-    unsafe { asm!("addi sp, sp, 16",) }
+
+    unsafe { asm!(
+                "addi sp, sp, 16",
+                "sw a0, 4(sp)"
+            );
+    }
 }
 
 pub fn benchmark() {
@@ -61,7 +67,7 @@ pub fn benchmark() {
         }
     }
 }
-
+/// For benchmarking purposes
 pub fn context_switch() {
     use riscv::register::{
         pmpaddr0, pmpaddr1, pmpaddr2, pmpaddr3, pmpaddr4, pmpaddr5, pmpaddr6, pmpaddr7, pmpcfg0,

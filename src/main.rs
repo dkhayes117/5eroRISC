@@ -6,7 +6,7 @@ extern crate panic_halt;
 //use hifive1::sprintln;
 //use riscv::register::{cycle};
 use riscv_rt::entry;
-use zerorisc::pmp::{Lock, Permission, Pmpconfig, RangeType};
+use zerorisc::pmp::{Lock, Permission, Pmpconfig, RangeType, pmp_reset};
 use zerorisc::privilege::user_app_entry;
 use zerorisc::uart::config_uart;
 use zerorisc::user::user_app;
@@ -16,6 +16,9 @@ use zerorisc::user::user_app;
 fn main() -> ! {
     //Setup UART for printing to the console
     config_uart();
+
+    // Intialize PMP configurations to 0
+    pmp_reset();
 /*
        // Benchmarking
     benchmark();

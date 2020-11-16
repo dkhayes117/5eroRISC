@@ -9,7 +9,7 @@ pub enum SyscallType {
     Syscall = 4,
     Unknown = 5,
 }
-
+/// Request Action from M-Mode
 #[inline(never)]
 pub unsafe fn syscall(call_type: SyscallType, x: usize) {
 

@@ -107,7 +107,7 @@ pub fn napot_range(base: usize, size: usize) -> usize {
     base + ((size / 2) - 1) >> 2
 }
 
-// Read the pmp registers
+/// Read the pmp registers
 pub fn print_pmp_addresses() {
     sprintln!("pmpaddr0: {:#X}", pmpaddr0::read());
     sprintln!("pmpaddr1: {:#X}", pmpaddr1::read());
@@ -126,4 +126,9 @@ pub fn print_register_by_byte(x: usize, mut i: i32) {
         i += 1;
     }
     sprintln!("\n");
+}
+
+pub fn pmp_reset(){
+    pmpcfg0::write(0x0);
+    pmpcfg1::write(0x0);
 }
