@@ -60,6 +60,6 @@ pub unsafe fn user_app_entry(user_entry: usize) {
             "mv ra, zero",
             "mv sp, {0}",
             "mret",
-            in(reg) stack_ptr
+            in(reg) stack_ptr,
     );
 }

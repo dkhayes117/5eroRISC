@@ -19,17 +19,17 @@ pub fn trap_handler(trap_frame: &TrapFrame) {
         Trap::Exception(UserEnvCall) => {
             //sprintln!("User Syscall");
             match trap_frame.a0 {
-                0 => {
+                1 => {
                     sprintln!("Call type: Exit\n");
                     loop {}
                 }
-                1 => {
+                2 => {
                     //sprintln!("Call type: ConsoleOut");
                     sprintln!("{}", trap_frame.a1);
                     mepc::write(epc + 4);
                     return;
                 }
-                2 => {
+                3 => {
                     use crate::cpu::benchmark;
                     use riscv::register::cycle;
                     let start = cycle::read();
@@ -39,13 +39,18 @@ pub fn trap_handler(trap_frame: &TrapFrame) {
                     mepc::write(epc + 4);
                     return;
                 }
-                3 => {
+                4 => {
                     use crate::cpu::context_switch;
                     context_switch();
                     mepc::write(epc + 4);
                     return;
                 }
-                4 => {
+                5 => {
+                    mepc::write(epc + 4);
+                    return;
+                }
+                6 => {
+                    crate::peripherals::read_temp();
                     mepc::write(epc + 4);
                     return;
                 }

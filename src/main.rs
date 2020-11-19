@@ -8,14 +8,15 @@ extern crate panic_halt;
 use riscv_rt::entry;
 use zerorisc::pmp::{Lock, Permission, Pmpconfig, RangeType, pmp_reset};
 use zerorisc::privilege::user_app_entry;
-use zerorisc::uart::config_uart;
+use zerorisc::peripherals::{config_peripherals};
 use zerorisc::user::user_app;
 //use zerorisc::cpu::benchmark;
 
 #[entry]
 fn main() -> ! {
     //Setup UART for printing to the console
-    config_uart();
+    config_peripherals();
+
 
     // Intialize PMP configurations to 0
     pmp_reset();
@@ -26,10 +27,17 @@ fn main() -> ! {
     let start = cycle::read();
     benchmark();
     let end = cycle::read();
-    sprintln!("M-mode cycles {}", end -start);
+    sprintln!("M-mode cycles {}", end - start);
+
+    read_temp();
+    read_temp();
+    let start = cycle::read();
+    for _i in 0..30 {
+        read_temp();
+    }
+    let end = cycle::read();
+    sprintln!("M-mode cycles {}", (end - start)/30);
 */
-
-
     // Get addresses for the u-mode entry and the trap vector
     //let trap_address = trap_vector as *const();
     let user_entry = user_app as *const (); //Function address

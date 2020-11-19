@@ -2,12 +2,12 @@
 
 //use riscv_rt::TrapFrame;
 pub enum SyscallType {
-    Exit = 0,
-    ConsoleOut = 1,
-    Benchmark = 2,
-    ContextSwitch = 3,
-    Syscall = 4,
-    Unknown = 5,
+    Exit = 1,
+    ConsoleOut = 2,
+    Benchmark = 3,
+    ContextSwitch = 4,
+    Syscall = 5,
+    GetTemp = 6,
 }
 /// Request Action from M-Mode
 #[inline(never)]
