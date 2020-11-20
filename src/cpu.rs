@@ -83,15 +83,15 @@ pub fn context_switch() {
     pmpaddr7::write(0x2000_1000);
 }
 
-/*
+
 impl StackFrame {
-    pub const fn new() -> Self {
+    pub fn new() -> StackFrame {
         StackFrame {
             stack: [0; STACK_SIZE],
         }
     }
 }
-*/
+
 //store cpu state
 /*
 #[derive(Clone, Copy)]

@@ -1,4 +1,5 @@
-use crate::cpu::{StackFrame, STACK_SIZE};
+use core::mem::size_of_val;
+use crate::cpu::{StackFrame};
 use crate::pmp::{Lock, Permission, Pmpconfig, RangeType};
 //use hifive1::sprintln;
 use riscv::register::{mcounteren, mepc, mstatus};
@@ -6,9 +7,7 @@ use riscv::register::{mcounteren, mepc, mstatus};
 
 pub unsafe fn user_app_entry(user_entry: usize) {
     //Create user stack and determine stack pointer and trap handler
-    let user_stack = StackFrame {
-        stack: [0; STACK_SIZE],
-    };
+    let user_stack = StackFrame::new();
     let raw_ptr: *const StackFrame = &user_stack;
     let stack_ptr: *const StackFrame = raw_ptr.offset(1); //Top of stack
 
@@ -22,7 +21,7 @@ pub unsafe fn user_app_entry(user_entry: usize) {
 
     let pmp1 = Pmpconfig {
         base: raw_ptr as usize, //raw_ptr as usize
-        size: STACK_SIZE,
+        size: size_of_val(&user_stack),
         range_type: RangeType::TOR,
         pmp_index: 1 as usize,
         permission: Permission::RW,
@@ -31,7 +30,7 @@ pub unsafe fn user_app_entry(user_entry: usize) {
 
     let pmp2 = Pmpconfig {
         base: stack_ptr as usize, //stack_ptr as usize
-        size: STACK_SIZE,
+        size: size_of_val(&user_stack),
         range_type: RangeType::TOR,
         pmp_index: 2 as usize,
         permission: Permission::RW,
