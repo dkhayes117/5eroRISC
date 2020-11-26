@@ -2,6 +2,7 @@
 
 //use riscv_rt::TrapFrame;
 pub enum SyscallType {
+    Unknown = 0,
     Exit = 1,
     ConsoleOut = 2,
     Benchmark = 3,

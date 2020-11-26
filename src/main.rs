@@ -45,18 +45,27 @@ fn main() -> ! {
     //sprintln!("Trap Address::{:0X}",trap_address as usize);
     //sprintln!("User Entry::{:0X}",user_entry as usize);
 
-    // Configure PMP for u-mode permissions
-
+    // Configure PMP for u-mode permissions (.text section)
     let pmp0 = Pmpconfig {
+        base: 0x2001_0000,
+        size: 0x2001_0000,
+        range_type: RangeType::TOR,
+        pmp_index: 0 as usize,
+        permission: Permission::NONE,
+        locked: Lock::UNLOCKED,
+    };
+
+    let pmp1 = Pmpconfig {
         base: 0x2040_0000,
         size: 0x2040_0000,
         range_type: RangeType::TOR,
-        pmp_index: 0 as usize,
-        permission: Permission::RX,
+        pmp_index: 1 as usize,
+        permission: Permission::X,
         locked: Lock::UNLOCKED,
     };
 
     pmp0.set();
+    pmp1.set();
 
     // Start user app
     unsafe { user_app_entry(user_entry as usize) };

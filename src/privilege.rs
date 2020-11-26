@@ -19,26 +19,27 @@ pub unsafe fn user_app_entry(user_entry: usize) {
 
     //let trap_address = trap_handler as *const ();
 
-    let pmp1 = Pmpconfig {
+    // Stack overflow protection
+    let pmp2 = Pmpconfig {
         base: raw_ptr as usize, //raw_ptr as usize
         size: size_of_val(&user_stack),
         range_type: RangeType::TOR,
-        pmp_index: 1 as usize,
-        permission: Permission::RW,
+        pmp_index: 2 as usize,
+        permission: Permission::NONE,
         locked: Lock::UNLOCKED,
     };
 
-    let pmp2 = Pmpconfig {
+    let pmp3 = Pmpconfig {
         base: stack_ptr as usize, //stack_ptr as usize
         size: size_of_val(&user_stack),
         range_type: RangeType::TOR,
-        pmp_index: 2 as usize,
+        pmp_index: 3 as usize,
         permission: Permission::RW,
         locked: Lock::UNLOCKED,
     };
 
-    pmp1.set();
     pmp2.set();
+    pmp3.set();
     /*
         let sp: usize;
         asm!("mv {}, sp",

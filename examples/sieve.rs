@@ -11,7 +11,7 @@ use riscv::register::{cycle, instret, mcause, mcounteren, mepc, mstatus, pmpaddr
 use riscv_rt::{entry, TrapFrame};
 
 // Number of times to run sieve
-const COUNT: usize = 10;
+const COUNT: usize = 1000;
 
 // This creates a 16 byte aligned memory space for user mode operation
 #[repr(C, align(16))]
